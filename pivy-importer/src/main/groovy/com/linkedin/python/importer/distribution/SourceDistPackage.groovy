@@ -15,7 +15,6 @@
  */
 package com.linkedin.python.importer.distribution
 
-import java.util.zip.ZipFile
 import groovy.util.logging.Slf4j
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream
@@ -35,24 +34,27 @@ class SourceDistPackage extends PythonPackage {
     private Map<String, List<String>> parseRequiresText(String requires) {
         def dependenciesMap = [:]
         log.debug("requires: {}", requires)
-        def configuration = 'default'
-        dependenciesMap[configuration] = []
+        def config = 'default'
+        dependenciesMap[config] = []
         requires.eachLine { line ->
             if (line.isEmpty()) {
                 return
             }
             def configMatcher = line =~ /^\[(.*?)]$/
             if (configMatcher.matches()) {
-                configuration = configMatcher.group(1).split(":")[0]
-                if (configuration.isEmpty()) {
-                    configuration = 'default'
+                config = configMatcher.group(1).split(":")[0]
+                if (config.isEmpty()) {
+                    config = 'default'
                 }
-                log.debug("New config {}", configuration)
-                if (!dependenciesMap.containsKey(configuration)) {
-                    dependenciesMap[configuration] = []
+                log.debug("New config {}", config)
+                if (!dependenciesMap.containsKey(config)) {
+                    dependenciesMap[config] = []
                 }
             } else {
-                dependenciesMap[configuration] << parseDependencyFromRequire(line)
+                String dependency = parseDependencyFromRequire(line)
+                if (dependency != null) {
+                    dependenciesMap[config] << dependency
+                }
             }
         }
 

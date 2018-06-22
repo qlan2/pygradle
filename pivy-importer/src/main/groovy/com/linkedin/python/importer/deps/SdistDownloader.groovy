@@ -36,7 +36,12 @@ class SdistDownloader extends DependencyDownloader {
     def downloadDependency(String dep) {
         def (String name, String version) = dep.split(":")
 
-        def projectDetails = cache.getDetails(name)
+        def projectDetails = cache.getDetails(name, lenient)
+        // project name is illegal
+        if (projectDetails == null) {
+            return
+        }
+
         version = projectDetails.maybeFixVersion(version)
         def sdistDetails = projectDetails.findVersion(version).find { it.packageType == SOURCE_DIST_PACKAGE_TYPE }
 
@@ -57,7 +62,7 @@ class SdistDownloader extends DependencyDownloader {
 
         def sdistArtifact = downloadArtifact(destDir, sdistDetails.url)
         def packageDependencies = new SourceDistPackage(sdistArtifact, cache, dependencySubstitution,
-            latestVersions, allowPreReleases).dependencies
+            latestVersions, allowPreReleases, lenient).dependencies
 
         new IvyFileWriter(name, version, SOURCE_DIST_PACKAGE_TYPE, [sdistDetails]).writeIvyFile(destDir, packageDependencies)
 
