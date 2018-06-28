@@ -32,10 +32,21 @@ class WheelsDownloader extends DependencyDownloader {
         super(project, ivyRepoRoot, dependencySubstitution, processedDependencies, latestVersions, allowPreReleases, lenient)
     }
 
+    /**
+     * The module names in Wheel artifact names are using "_" to replace "-", eg., python-submit,
+     * its wheel artifact is python_subunit-1.3.0-py2.py3-none-any.whl.
+     * @param name
+     * @return
+     */
+    static String translateNameToWheelFormat(String name) {
+        return name.replaceAll("-", "_")
+    }
+
     @Override
     def downloadDependency(String dep) {
         def (String name, String version, String classifier) = dep.split(":")
 
+		name = translateNameToWheelFormat(name)
         def projectDetails = cache.getDetails(name, lenient)
         // project name is illegal, which means we can't find any information about this project on PyPI
         if (projectDetails == null) {
