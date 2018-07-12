@@ -46,6 +46,7 @@ class WheelsDownloader extends DependencyDownloader {
     def downloadDependency(String dep) {
         def (String name, String version, String classifier) = dep.split(":")
 
+        name = translateNameToWheelFormat(name)
         def projectDetails = cache.getDetails(name, lenient)
         // project name is illegal, which means we can't find any information about this project on PyPI
         if (projectDetails == null) {
